@@ -2,20 +2,29 @@
 namespace App\Http\Controllers;
 use App\Models\NfcData;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class NfcController extends Controller
 {
     // 接口2: NFC 数据写入
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'nfc_id' => 'required|string',
-            'wechat_id' => 'required|string',
-            'data_type' => 'required|integer|in:1,2,3,4',
-            'data_content' => 'required|string',
-            'title' => 'required|string',
-            'remarks' => 'nullable|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'nfc_id' => 'required|string',
+                'wechat_id' => 'required|string',
+                'data_type' => 'required|integer|in:1,2,3,4',
+                'data_content' => 'required|string',
+                'title' => 'required|string',
+                'remarks' => 'nullable|string',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         $data = NfcData::create([
             'nfc_id' => $validated['nfc_id'],
