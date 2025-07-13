@@ -16,12 +16,12 @@ class WechatAuthController extends Controller
         // 1. 获取前端传来的code
         $code = $request->input('code');
         $encryptedData = $request->input('encryptedData');
-        $vi = $request->input('vi');
+        $iv = $request->input('iv');
 
-        if (empty($code) || empty($encryptedData) || empty($vi)) {
+        if (empty($code) || empty($encryptedData) || empty($iv)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Code, encryptedData, vi 必传',
+                'message' => 'Code, encryptedData, iv 必传',
                 'errors' => "",
             ], 401);
         }
@@ -44,7 +44,7 @@ class WechatAuthController extends Controller
 
         // 5. 解密用户数据
         try {
-            $decryptUserData= $this->decryptUserData($encryptedData, $vi, $response['session_key']);
+            $decryptUserData= $this->decryptUserData($encryptedData, $iv, $response['session_key']);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
