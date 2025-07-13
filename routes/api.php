@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NfcController;
+use App\Http\Controllers\Auth\WechatAuthController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -30,9 +31,14 @@ Route::get('/wechat/{wechatId}/data', [NfcController::class, 'showByWechatId']);
 //    return $request->user();
 //});
 
-
+Route::post('/wechat/login', [WechatAuthController::class, 'login']);
 
 // 添加一个公开的测试接口
 Route::get('/hello', function () {
     return response()->json(['message' => 'Hello, API!']);
+});
+
+Route::any('/', function () {
+    //return view('welcome');
+    return "hello !!!";
 });

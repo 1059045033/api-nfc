@@ -6,6 +6,18 @@ use Illuminate\Validation\ValidationException;
 
 class NfcController extends Controller
 {
+//    public function __construct(Request $request)
+//    {
+//        $user_token = $request->bearerToken();
+//        if(empty($user_token)) {
+//            return response()->json([
+//                'success' => false,
+//                'message' => "header 需要传 token",
+//                'errors' => "",
+//            ], 401);
+//        }
+//    }
+
     // 接口2: NFC 数据写入
     public function store(Request $request)
     {
