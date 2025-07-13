@@ -33,7 +33,6 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'wechat_info',
-        'session_key',
         'updated_at',
     ];
 
