@@ -15,11 +15,13 @@ class WechatAuthController extends Controller
     {
         // 1. 获取前端传来的code
         $code = $request->input('code');
+        $encryptedData = $request->input('encryptedData');
+        $vi = $request->input('vi');
 
-        if (empty($code)) {
+        if (empty($code) || empty($encryptedData) || empty($vi)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Code 必传',
+                'message' => 'Code, encryptedData, vi 必传',
                 'errors' => "",
             ], 401);
         }
@@ -40,9 +42,20 @@ class WechatAuthController extends Controller
         // 4. 生成自定义登录态token
         $token = $user->createToken('wechat-miniprogram')->plainTextToken;
 
+        // 5. 解密用户数据
+        try {
+            $decryptUserData= $this->decryptUserData($encryptedData, $vi, $response['session_key']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => '解密失败: ' . $e->getMessage(),
+                'errors' => '解密失败: ' . $e->getMessage(),
+            ], 401);
+        }
+
         return response()->json([
             'token' => $token,
-            'user' => $user
+            'user' => $decryptUserData
         ]);
     }
 
@@ -79,5 +92,41 @@ class WechatAuthController extends Controller
         ]);
 
         return $user;
+    }
+    public function decryptUserData($encryptedData, $iv, $sessionKey)
+    {
+        // 校验参数
+        if (strlen($sessionKey) != 24) {
+            throw new \Exception('无效的session_key');
+        }
+        if (strlen($iv) != 24) {
+            throw new \Exception('无效的iv');
+        }
+
+        // Base64解码
+        $aesKey = base64_decode($sessionKey);
+        $aesIV = base64_decode($iv);
+        $aesCipher = base64_decode($encryptedData);
+
+        // 使用AES-128-CBC解密
+        $result = openssl_decrypt(
+            $aesCipher,
+            'AES-128-CBC',
+            $aesKey,
+            OPENSSL_RAW_DATA,
+            $aesIV
+        );
+
+        if ($result === false) {
+            throw new \Exception('解密失败，请检查参数');
+        }
+
+        // 解析JSON数据
+        $data = json_decode($result, true);
+        if (empty($data)) {
+            throw new \Exception('解密数据解析失败');
+        }
+
+        return $data;
     }
 }
