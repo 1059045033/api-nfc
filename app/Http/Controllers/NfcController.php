@@ -60,7 +60,7 @@ class NfcController extends Controller
     {
         $perPage = $request->input('per_page', 15); // 默认每页15条
         $page = $request->input('page', 1); // 默认第1页
-        $data_type = $request->input('data_type', 0); //
+        $data_type = $request->input('data_type', ''); //
 
         $query = NfcData::where('wechat_id', $wechatId)
             ->orderBy('created_at', 'desc');
@@ -68,7 +68,9 @@ class NfcController extends Controller
 //        echo $data_type;die;
         // 可选: 按数据类型筛选
         if (!empty($data_type)) {
-            $query->where('data_type', $data_type);
+            $data_type = trim($data_type, ',');
+            $data_types = explode(',', $data_type);
+            $query->whereIn('data_type', $data_types);
         }
 
         $data = $query->paginate($perPage, ['*'], 'page', $page);
